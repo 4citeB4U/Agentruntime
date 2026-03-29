@@ -1,0 +1,45 @@
+{
+  // ──────────────────────────────────────────────────────────────────────────
+  // VS Code MCP Server definitions  (requires VS Code 1.99 or later)
+  //
+  // This file is automatically discovered by VS Code when the folder is opened
+  // as a workspace root.  All servers listed here appear in the GitHub Copilot
+  // Chat model-picker under "MCP Servers".
+  //
+  // WINDOWS USERS: adjust the "env" paths below to match your local install.
+  // ──────────────────────────────────────────────────────────────────────────
+  "servers": {
+
+    // ── 1. BYO Android Dev MCP (local, Windows read-only) ─────────────────
+    // Wraps adb / gradlew / emulator for build-test-deploy without file edits.
+    // Prerequisites: Android Studio (includes JBR JDK 17), Android SDK,
+    //               repo cloned to D:\Agentruntime (or wherever you cloned it).
+    "android-dev": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp-server/dist/index.js"],
+      "env": {
+        // ── Adjust these paths to match your Windows install ──────────────
+        "ANDROID_HOME": "D:\\Android\\Sdk",
+        "ANDROID_SDK_ROOT": "D:\\Android\\Sdk",
+        "JAVA_HOME": "C:\\Program Files\\Android\\Android Studio\\jbr",
+        "ANDROID_PROJECT_DIR": "${workspaceFolder}",
+        // Strict read-only mode: server refuses any tool that modifies files
+        "MCP_READONLY": "true"
+      }
+    },
+
+    // ── 2. Filesystem MCP (read access to workspace files) ────────────────
+    // Gives Copilot Chat read-only access to source files for context.
+    // Install once: npm install -g @modelcontextprotocol/server-filesystem
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${workspaceFolder}"
+      ]
+    }
+  }
+}

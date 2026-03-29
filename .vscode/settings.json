@@ -1,0 +1,43 @@
+{
+  // ──────────────────────────────────────────────────────────────────────────
+  // Workspace-level VS Code settings for Agentruntime
+  // MCP (Model Context Protocol) servers are configured in .vscode/mcp.json
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // Editor defaults
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+
+  // TypeScript / ESLint
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // Ensure extensions enabled in this workspace
+  "extensions.ignoreRecommendations": false,
+
+  // ── MCP servers (VS Code 1.99+) ───────────────────────────────────────────
+  // The dedicated MCP server list lives in .vscode/mcp.json so that it is
+  // version-controlled and shared with every developer who clones this repo.
+  // The setting below activates workspace-scoped MCP server discovery.
+  "chat.mcp.discovery.enabled": true,
+
+  // Make GitHub Copilot Chat aware of MCP servers defined in .vscode/mcp.json
+  "github.copilot.chat.mcp.enabled": true,
+
+  // ── File associations ─────────────────────────────────────────────────────
+  "files.associations": {
+    "*.env.local": "dotenv",
+    "mcp.json": "json"
+  },
+
+  // Exclude build / dependency noise from explorer & search
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true
+  }
+}
