@@ -1,0 +1,27 @@
+{
+  "name": "@agentruntime/android-dev-mcp",
+  "version": "1.0.0",
+  "description": "Offline-first BYO Android Dev MCP server for VS Code Copilot Chat – wraps adb, gradlew, emulator, apksigner, bundletool, aapt2",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "android-dev-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.26.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "~5.8.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

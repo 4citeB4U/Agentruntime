@@ -20,3 +20,28 @@ View your app in AI Studio: https://ai.studio/apps/7d65f538-1e0e-47d4-a584-a1548
    `npm run dev`
 # Agentruntime
 # Agentruntime
+
+---
+
+## 🤖 Android Dev MCP Server
+
+An **offline-first, Windows-compatible** MCP server for Android development—build, test, deploy and inspect Android apps directly from **VS Code Copilot Chat** without any third-party API keys.
+
+📁 **Location:** [`tools/mcp/android-dev/`](tools/mcp/android-dev/)
+
+📖 **Full documentation & Windows setup guide:** [`tools/mcp/android-dev/README.md`](tools/mcp/android-dev/README.md)
+
+### Quick start (Windows)
+
+```powershell
+# 1. Install Node.js LTS from https://nodejs.org if not already installed
+
+# 2. Allow script execution (one-time)
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+# 3. Run the setup wizard
+cd tools\mcp\android-dev
+.\scripts\Setup-AndroidMCP.ps1
+```
+
+The setup script detects your Android SDK, Java (Android Studio JBR), builds the server, and prints the exact snippet to paste into your VS Code `settings.json`.
