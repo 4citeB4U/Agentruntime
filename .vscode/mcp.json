@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "android-dev-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/android-dev-mcp/dist/index.js"],
+      "env": {
+        "ANDROID_SDK_ROOT": "",
+        "JAVA_HOME": ""
+      }
+    }
+  }
+}

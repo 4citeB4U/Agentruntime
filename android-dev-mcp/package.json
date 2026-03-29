@@ -1,0 +1,22 @@
+{
+  "name": "android-dev-mcp",
+  "version": "1.0.0",
+  "description": "Windows-first, offline BYO Android Dev MCP server for VS Code Copilot Chat",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
