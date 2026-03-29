@@ -1,0 +1,22 @@
+{
+  "name": "android-dev-mcp",
+  "version": "1.0.0",
+  "description": "Read-only Android development MCP server — build, test, deploy, and inspect devices without modifying source code.",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^20.12.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
