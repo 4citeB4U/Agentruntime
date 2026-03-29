@@ -20,3 +20,17 @@ View your app in AI Studio: https://ai.studio/apps/7d65f538-1e0e-47d4-a584-a1548
    `npm run dev`
 # Agentruntime
 # Agentruntime
+
+## Android Dev MCP Server
+
+An offline, Windows-first MCP server that gives VS Code Copilot/agents the ability to build, test, deploy, and inspect Android apps using your local SDK tools — without modifying any source files.
+
+**Location:** [`tools/mcp/android-dev-mcp/`](tools/mcp/android-dev-mcp/)
+
+**Quick start:**
+```powershell
+cd tools\mcp\android-dev-mcp
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+```
+
+See the full [Android Dev MCP README](tools/mcp/android-dev-mcp/README.md) for step-by-step setup instructions, VS Code configuration, and troubleshooting.
