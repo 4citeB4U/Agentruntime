@@ -1,0 +1,19 @@
+{
+  "name": "android-dev-mcp",
+  "version": "1.0.0",
+  "description": "BYO read-only Android Dev MCP server (build / test / deploy — no file edits)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.8.2"
+  }
+}
