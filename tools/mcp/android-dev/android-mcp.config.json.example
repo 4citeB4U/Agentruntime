@@ -1,0 +1,12 @@
+{
+  "androidSdkRoot": "C:\\Users\\YourName\\AppData\\Local\\Android\\Sdk",
+  "javaHome": "C:\\Program Files\\Android\\Android Studio\\jbr",
+  "allowedProjectRoots": [
+    "D:\\my-android-project",
+    "D:\\another-project"
+  ],
+  "defaultTimeoutMs": 120000,
+  "adbPath": "",
+  "gradlewName": "gradlew.bat",
+  "bundletoolJar": ""
+}
