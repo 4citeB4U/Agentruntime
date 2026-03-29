@@ -1,0 +1,31 @@
+{
+  "name": "mcp-android-dev",
+  "version": "1.0.0",
+  "description": "BYO Android Dev MCP server — Windows-only, read-only build/test/deploy/ADB toolset for GitHub Copilot Chat",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "android",
+    "adb",
+    "gradle",
+    "copilot"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

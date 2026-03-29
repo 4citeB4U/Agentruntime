@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# MCP server — local config and build artifacts (never commit secrets)
+mcp-android-dev/.env
+mcp-android-dev/dist/
+mcp-android-dev/node_modules/
