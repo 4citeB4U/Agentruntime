@@ -1,0 +1,23 @@
+{
+  "name": "android-dev-mcp",
+  "version": "1.0.0",
+  "description": "Windows-first offline Android Dev MCP server for VS Code Copilot Chat",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --watch dist/server.js",
+    "start": "node dist/server.js",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "~5.8.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
