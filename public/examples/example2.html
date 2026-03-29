@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxel Jetpack Cat</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #ffeedd; }
+        canvas { display: block; }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
+
+        // --- Configuration ---
+        const VOXEL_SIZE = 1;
+        const ISLAND_RADIUS = 12; // Reduced from 16
+        const ISLAND_DEPTH = 8;   // Reduced from 12
+
+        // Palette
+        const PALETTE = {
+            GRASS: 0x7a9e55,
+            DIRT: 0x5c4033,
+            STONE: 0x7a7a7a,
+            CAT_BODY: 0xE69F46,
+            CAT_WHITE: 0xFFFFFF,
+            CAT_EYE: 0x333333,
+            JETPACK: 0x888888,
+            FIRE: 0xff4400
+        };
+
+        // --- Setup Scene ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffeedd);
+        scene.fog = new THREE.FogExp2(0xffeedd, 0.005); // Reduced fog
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(60, 30, 60);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.SoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 3.0; // 20 seconds per rotation
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffcccc, 0.6);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 1.5);
+        sunLight.position.set(50, 80, 30);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        scene.add(sunLight);
+
+        // --- Voxel Logic ---
+        const voxels = [];
+        let state = 'SCATTERED';
+        const FLOOR_Y = -30;
+
+        function addVoxel(x, y, z, color) {
+            const vx = (Math.random() - 0.5) * 40;
+            const vz = (Math.random() - 0.5) * 40;
+            const vy = FLOOR_Y + Math.random() * 2;
+            voxels.push({ 
+                x: vx, y: vy, z: vz, targetX: x, targetY: y, targetZ: z, color,
+                vx: 0, vy: 0, vz: 0,
+                rx: Math.random() * Math.PI, ry: Math.random() * Math.PI, rz: Math.random() * Math.PI,
+                rvx: (Math.random() - 0.5) * 0.1, rvy: (Math.random() - 0.5) * 0.1, rvz: (Math.random() - 0.5) * 0.1
+            });
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'DISMANTLE') {
+                state = 'DISMANTLING';
+                voxels.forEach(v => {
+                    v.vx = (Math.random() - 0.5) * 0.2;
+                    v.vy = Math.random() * 0.2;
+                    v.vz = (Math.random() - 0.5) * 0.2;
+                });
+            }
+        });
+
+        setTimeout(() => { if (state === 'SCATTERED') state = 'REBUILDING'; }, 1500);
+
+        // --- Procedural Generation ---
+        const simplex = new SimplexNoise();
+        
+        // 1. Island
+        for (let x = -ISLAND_RADIUS; x <= ISLAND_RADIUS; x++) {
+            for (let z = -ISLAND_RADIUS; z <= ISLAND_RADIUS; z++) {
+                const d = Math.sqrt(x*x + z*z);
+                if (d < ISLAND_RADIUS) {
+                    const surfaceHeight = Math.floor(simplex.noise(x * 0.1, z * 0.1) * 2);
+                    let depth = Math.floor((ISLAND_RADIUS - d) * 1.2);
+                    depth += Math.floor(simplex.noise(x * 0.2, z * 0.2) * 4);
+                    
+                    for (let y = surfaceHeight; y >= surfaceHeight - depth; y--) {
+                        let color = y === surfaceHeight ? PALETTE.GRASS : (y > surfaceHeight - 3 ? PALETTE.DIRT : PALETTE.STONE);
+                        addVoxel(x, y, z, color);
+                    }
+                }
+            }
+        }
+
+        // 2. Jetpack Cat
+        const catY = 5;
+        // Body
+        for (let x = -3; x <= 3; x++) {
+            for (let y = 0; y < 5; y++) {
+                for (let z = -2; z <= 2; z++) {
+                    addVoxel(x, catY + y, z, PALETTE.CAT_BODY);
+                }
+            }
+        }
+        // Head
+        for (let x = -2; x <= 2; x++) {
+            for (let y = 5; y < 9; y++) {
+                for (let z = -2; z <= 2; z++) {
+                    addVoxel(x, catY + y, z, PALETTE.CAT_BODY);
+                }
+            }
+        }
+        // Ears
+        addVoxel(-2, catY + 9, -1, PALETTE.CAT_BODY);
+        addVoxel(2, catY + 9, -1, PALETTE.CAT_BODY);
+        // Jetpack
+        for (let x = -2; x <= 2; x++) {
+            for (let y = 1; y < 4; y++) {
+                addVoxel(x, catY + y, 3, PALETTE.JETPACK);
+            }
+        }
+
+        // --- Rendering ---
+        const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, voxels.length);
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+        scene.add(instancedMesh);
+
+        const dummy = new THREE.Object3D();
+        const color = new THREE.Color();
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            controls.update();
+
+            voxels.forEach((v, i) => {
+                if (state === 'REBUILDING') {
+                    v.x += (v.targetX - v.x) * 0.08;
+                    v.y += (v.targetY - v.y) * 0.08;
+                    v.z += (v.targetZ - v.z) * 0.08;
+                    v.rx += (0 - v.rx) * 0.08;
+                    v.ry += (0 - v.ry) * 0.08;
+                    v.rz += (0 - v.rz) * 0.08;
+                } else if (state === 'DISMANTLING') {
+                    v.vy -= 0.02;
+                    v.x += v.vx; v.y += v.vy; v.z += v.vz;
+                    v.rx += v.rvx; v.ry += v.rvy; v.rz += v.rvz;
+                    if (v.y < FLOOR_Y) { 
+                        v.y = FLOOR_Y; 
+                        v.vy *= -0.2; 
+                        v.vx *= 0.8;
+                        v.vz *= 0.8;
+                        v.rvx *= 0.8; v.rvy *= 0.8; v.rvz *= 0.8;
+                    }
+                } else if (state === 'SCATTERED') {
+                    v.y = FLOOR_Y;
+                }
+
+                dummy.position.set(v.x, v.y, v.z);
+                dummy.rotation.set(v.rx, v.ry, v.rz);
+                dummy.updateMatrix();
+                instancedMesh.setMatrixAt(i, dummy.matrix);
+                instancedMesh.setColorAt(i, color.setHex(v.color));
+            });
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            instancedMesh.instanceColor.needsUpdate = true;
+
+            if (state !== 'DISMANTLING') {
+                instancedMesh.position.y = Math.sin(time * 0.5) * 0.5;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+</html>

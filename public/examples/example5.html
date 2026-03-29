@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxel Cyberpunk Scene</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; }
+        canvas { display: block; }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Configuration ---
+        const PALETTE = {
+            BUILDING: 0x1a1a1a,
+            NEON_PINK: 0xff00ff,
+            NEON_BLUE: 0x00ffff,
+            NEON_YELLOW: 0xffff00,
+            ROAD: 0x111111,
+            CAR: 0x333333
+        };
+
+        // --- Setup Scene ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.FogExp2(0x050505, 0.01);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(50, 30, 50);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.SoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 3.0; // 20 seconds per rotation
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xff00ff, 2, 100);
+        pointLight.position.set(0, 20, 0);
+        scene.add(pointLight);
+
+        // --- Voxel Logic ---
+        const voxels = [];
+        let state = 'SCATTERED';
+        const FLOOR_Y = -30;
+
+        function addVoxel(x, y, z, color) {
+            const vx = (Math.random() - 0.5) * 60;
+            const vz = (Math.random() - 0.5) * 60;
+            const vy = FLOOR_Y + Math.random() * 2;
+            voxels.push({ 
+                x: vx, y: vy, z: vz, targetX: x, targetY: y, targetZ: z, color,
+                vx: 0, vy: 0, vz: 0,
+                rx: Math.random() * Math.PI, ry: Math.random() * Math.PI, rz: Math.random() * Math.PI,
+                rvx: (Math.random() - 0.5) * 0.1, rvy: (Math.random() - 0.5) * 0.1, rvz: (Math.random() - 0.5) * 0.1
+            });
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'DISMANTLE') {
+                state = 'DISMANTLING';
+                voxels.forEach(v => {
+                    v.vx = (Math.random() - 0.5) * 0.4;
+                    v.vy = Math.random() * 0.4;
+                    v.vz = (Math.random() - 0.5) * 0.4;
+                });
+            }
+        });
+
+        setTimeout(() => { if (state === 'SCATTERED') state = 'REBUILDING'; }, 1500);
+
+        // --- Scene Construction ---
+        // Ground
+        for(let x = -15; x <= 15; x++) {
+            for(let z = -15; z <= 15; z++) {
+                addVoxel(x, 0, z, PALETTE.ROAD);
+            }
+        }
+
+        // Buildings
+        function buildBuilding(bx, bz, w, h, neonColor) {
+            for(let x = -w/2; x <= w/2; x++) {
+                for(let y = 1; y <= h; y++) {
+                    for(let z = -w/2; z <= w/2; z++) {
+                        let color = PALETTE.BUILDING;
+                        if (y % 4 === 0 && (Math.abs(x) === w/2 || Math.abs(z) === w/2)) {
+                            color = neonColor;
+                        }
+                        addVoxel(bx + x, y, bz + z, color);
+                    }
+                }
+            }
+        }
+
+        buildBuilding(-8, -8, 4, 15, PALETTE.NEON_PINK);
+        buildBuilding(8, -8, 5, 20, PALETTE.NEON_BLUE);
+        buildBuilding(-8, 8, 6, 12, PALETTE.NEON_YELLOW);
+        buildBuilding(8, 8, 4, 18, PALETTE.NEON_PINK);
+
+        // --- Rendering ---
+        const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, voxels.length);
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+        scene.add(instancedMesh);
+
+        const dummy = new THREE.Object3D();
+        const color = new THREE.Color();
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            controls.update();
+
+            voxels.forEach((v, i) => {
+                if (state === 'REBUILDING') {
+                    v.x += (v.targetX - v.x) * 0.08;
+                    v.y += (v.targetY - v.y) * 0.08;
+                    v.z += (v.targetZ - v.z) * 0.08;
+                    v.rx += (0 - v.rx) * 0.08;
+                    v.ry += (0 - v.ry) * 0.08;
+                    v.rz += (0 - v.rz) * 0.08;
+                } else if (state === 'DISMANTLING') {
+                    v.vy -= 0.02;
+                    v.x += v.vx; v.y += v.vy; v.z += v.vz;
+                    v.rx += v.rvx; v.ry += v.rvy; v.rz += v.rvz;
+                    if (v.y < FLOOR_Y) { 
+                        v.y = FLOOR_Y; 
+                        v.vy *= -0.2; 
+                        v.vx *= 0.8;
+                        v.vz *= 0.8;
+                        v.rvx *= 0.8; v.rvy *= 0.8; v.rvz *= 0.8;
+                    }
+                } else if (state === 'SCATTERED') {
+                    v.y = FLOOR_Y;
+                }
+
+                dummy.position.set(v.x, v.y, v.z);
+                dummy.rotation.set(v.rx, v.ry, v.rz);
+                dummy.updateMatrix();
+                instancedMesh.setMatrixAt(i, dummy.matrix);
+                instancedMesh.setColorAt(i, color.setHex(v.color));
+            });
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            instancedMesh.instanceColor.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

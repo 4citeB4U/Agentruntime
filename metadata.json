@@ -1,0 +1,5 @@
+{
+  "name": "Agent Lee Voxel OS",
+  "description": "A professional interactive voxel art interface with Agent Lee.",
+  "requestFramePermissions": ["microphone"]
+}

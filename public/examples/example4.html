@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxel Eagle</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #ffeedd; }
+        canvas { display: block; }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Configuration ---
+        const VOXEL_SIZE = 1;
+        const PALETTE = {
+            FEATHERS: 0x4B3621,
+            HEAD: 0xFFFFFF,
+            BEAK: 0xFFD700,
+            EYE: 0x000000,
+            CLAW: 0xDAA520,
+            BRANCH: 0x5C4033
+        };
+
+        // --- Setup Scene ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffeedd);
+        scene.fog = new THREE.FogExp2(0xffeedd, 0.005); // Reduced fog
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(40, 20, 40);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.SoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 3.0; // 20 seconds per rotation
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 1.2);
+        sunLight.position.set(30, 50, 20);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
+
+        // --- Voxel Logic ---
+        const voxels = [];
+        let state = 'SCATTERED';
+        const FLOOR_Y = -30;
+
+        function addVoxel(x, y, z, color) {
+            const vx = (Math.random() - 0.5) * 50;
+            const vz = (Math.random() - 0.5) * 50;
+            const vy = FLOOR_Y + Math.random() * 2;
+            voxels.push({ 
+                x: vx, y: vy, z: vz, targetX: x, targetY: y, targetZ: z, color,
+                vx: 0, vy: 0, vz: 0,
+                rx: Math.random() * Math.PI, ry: Math.random() * Math.PI, rz: Math.random() * Math.PI,
+                rvx: (Math.random() - 0.5) * 0.1, rvy: (Math.random() - 0.5) * 0.1, rvz: (Math.random() - 0.5) * 0.1
+            });
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'DISMANTLE') {
+                state = 'DISMANTLING';
+                voxels.forEach(v => {
+                    v.vx = (Math.random() - 0.5) * 0.3;
+                    v.vy = Math.random() * 0.3;
+                    v.vz = (Math.random() - 0.5) * 0.3;
+                });
+            }
+        });
+
+        setTimeout(() => { if (state === 'SCATTERED') state = 'REBUILDING'; }, 1500);
+
+        // --- Eagle Construction ---
+        // Branch
+        for(let x = -10; x <= 10; x++) {
+            for(let y = -1; y <= 0; y++) {
+                for(let z = -1; z <= 1; z++) {
+                    addVoxel(x, y, z, PALETTE.BRANCH);
+                }
+            }
+        }
+
+        // Body
+        for(let x = -2; x <= 2; x++) {
+            for(let y = 1; y <= 6; y++) {
+                for(let z = -2; z <= 2; z++) {
+                    addVoxel(x, y, z, PALETTE.FEATHERS);
+                }
+            }
+        }
+
+        // Wings (Spread)
+        for(let x = 3; x <= 8; x++) {
+            for(let y = 4; y <= 6; y++) {
+                for(let z = -1; z <= 1; z++) {
+                    addVoxel(x, y, z, PALETTE.FEATHERS);
+                    addVoxel(-x, y, z, PALETTE.FEATHERS);
+                }
+            }
+        }
+
+        // Head
+        for(let x = -1; x <= 1; x++) {
+            for(let y = 7; y <= 9; y++) {
+                for(let z = -1; z <= 1; z++) {
+                    addVoxel(x, y, z, PALETTE.HEAD);
+                }
+            }
+        }
+
+        // Beak
+        addVoxel(0, 8, 2, PALETTE.BEAK);
+        addVoxel(0, 7, 2, PALETTE.BEAK);
+
+        // --- Rendering ---
+        const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7 });
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, voxels.length);
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+        scene.add(instancedMesh);
+
+        const dummy = new THREE.Object3D();
+        const color = new THREE.Color();
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            controls.update();
+
+            voxels.forEach((v, i) => {
+                if (state === 'REBUILDING') {
+                    v.x += (v.targetX - v.x) * 0.08;
+                    v.y += (v.targetY - v.y) * 0.08;
+                    v.z += (v.targetZ - v.z) * 0.08;
+                    v.rx += (0 - v.rx) * 0.08;
+                    v.ry += (0 - v.ry) * 0.08;
+                    v.rz += (0 - v.rz) * 0.08;
+                } else if (state === 'DISMANTLING') {
+                    v.vy -= 0.02;
+                    v.x += v.vx; v.y += v.vy; v.z += v.vz;
+                    v.rx += v.rvx; v.ry += v.rvy; v.rz += v.rvz;
+                    if (v.y < FLOOR_Y) { 
+                        v.y = FLOOR_Y; 
+                        v.vy *= -0.2; 
+                        v.vx *= 0.8;
+                        v.vz *= 0.8;
+                        v.rvx *= 0.8; v.rvy *= 0.8; v.rvz *= 0.8;
+                    }
+                } else if (state === 'SCATTERED') {
+                    v.y = FLOOR_Y;
+                }
+
+                dummy.position.set(v.x, v.y, v.z);
+                dummy.rotation.set(v.rx, v.ry, v.rz);
+                dummy.updateMatrix();
+                instancedMesh.setMatrixAt(i, dummy.matrix);
+                instancedMesh.setColorAt(i, color.setHex(v.color));
+            });
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            instancedMesh.instanceColor.needsUpdate = true;
+
+            if (state !== 'DISMANTLING') {
+                instancedMesh.position.y = Math.sin(time * 0.8) * 0.3;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
