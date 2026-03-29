@@ -1,0 +1,25 @@
+{
+  "androidSdk": "/path/to/Android/sdk",
+  "javaHome": "/path/to/java",
+  "adb": "",
+  "gradlew": "./gradlew",
+  "bundletool": "",
+  "apksigner": "",
+  "aapt2": "",
+  "emulator": "",
+  "avdmanager": "",
+  "maestro": "",
+  "fastlane": "",
+  "keystore": {
+    "path": "/path/to/release.keystore",
+    "alias": "release",
+    "storePasswordEnv": "KEYSTORE_STORE_PASSWORD",
+    "keyPasswordEnv": "KEYSTORE_KEY_PASSWORD"
+  },
+  "workingDirectories": [
+    "/home/user/myapp"
+  ],
+  "commandTimeoutMs": 300000,
+  "logcatMaxLines": 2000,
+  "allowExternalNetworkCalls": false
+}
