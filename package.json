@@ -7,12 +7,20 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:build": "npm run build && npx cap sync android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@google/genai": "^1.27.0",
     "@tailwindcss/vite": "^4.2.2",
     "@types/three": "^0.183.1",
+    "animejs": "^4.3.6",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
@@ -23,6 +31,7 @@
     "three": "^0.183.2"
   },
   "devDependencies": {
+    "@types/animejs": "^3.1.13",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",

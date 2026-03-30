@@ -4,7 +4,7 @@
 */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { generateImage, generateVoxelScene } from './services/gemini';
+import { generateImage, generateVoxelScene } from './services/localLlm';
 import { extractHtmlFromText, zoomCamera } from './utils/html';
 import { Layout, PageId } from './components/Layout';
 import { Home } from './pages/Home';
